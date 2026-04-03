@@ -3,14 +3,14 @@ import { BasePage } from './BasePage';
 import { Logger } from '../utils/logger';
 
 /**
- * LoginPage - OrangeHRM Login
+ * LoginPage - Página de Acceso OrangeHRM
  * 
- * Handles all login-related interactions and validations
- * Follows POM pattern: locators as readonly properties, methods as user actions
+ * Maneja todas las interacciones y validaciones relacionadas con el login
+ * Sigue el patrón POM: locators como propiedades readonly, métodos como acciones del usuario
  */
 export class LoginPage extends BasePage {
-    // ===== Locators =====
-    // Using CSS selectors for OrangeHRM login form (more reliable than placeholder text)
+    // ===== Localizadores =====
+    // Usando selectores CSS para el formulario de login de OrangeHRM (más confiables que placeholder)
     readonly usernameInput: Locator = this.page.locator('input[name="username"]');
     readonly passwordInput: Locator = this.page.locator('input[name="password"]');
     readonly loginButton: Locator = this.page.locator('button[type="submit"]');

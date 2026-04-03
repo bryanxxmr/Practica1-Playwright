@@ -3,144 +3,143 @@ import { LoginPage } from '@pages/LoginPage';
 import { DashboardPage } from '@pages/DashboardPage';
 
 /**
- * OrangeHRM Login Test Suite
+ * Suite de Pruebas de Autenticación de OrangeHRM
  * 
- * Tests authentication flows using Page Object Model pattern
- * Demonstrates:
- * - Separation of concerns (POM layer)
- * - Reusable fixtures (basePage, logger)
- * - Clear test organization with descriptive names
- * - Proper error handling and assertions
+ * Pruebas de flujos de autenticación usando el patrón Page Object Model
+ * Demuestra:
+ * - Separación de responsabilidades (capa POM)
+ * - Fixtures reutilizables (basePage, logger)
+ * - Organización clara de tests con nombres descriptivos
+ * - Manejo adecuado de errores y assertciones
  */
 
-test.describe('OrangeHRM Authentication', () => {
+test.describe('Autenticación OrangeHRM', () => {
     let loginPage: LoginPage;
     let dashboardPage: DashboardPage;
 
     test.beforeEach(async ({ page, logger }) => {
-        logger.step('Initialize page objects');
+        logger.step('Inicializar page objects');
         loginPage = new LoginPage(page);
         dashboardPage = new DashboardPage(page);
     });
 
-    test('should display login page', async ({ logger }) => {
-        logger.step('Scenario: Verify login page is displayed');
+    test('Debe mostrar la página de inicio de sesión', async ({ logger }) => {
+        logger.step('Escenario: Verificar que la página de login se visualiza');
 
         await loginPage.navigate();
         const isDisplayed = await loginPage.isDisplayed();
 
         expect(isDisplayed).toBe(true);
-        logger.info('✅ Login page is displayed correctly');
+        logger.info('✅ Página de login mostrada correctamente');
     });
 
-    test('should successfully login with valid credentials', async ({ logger }) => {
-        logger.step('Scenario: Login with valid credentials');
+    test('Debe autenticar exitosamente con credenciales válidas', async ({ logger }) => {
+        logger.step('Escenario: Login con credenciales válidas');
 
-        // Arrange
+        // Preparar
         const username = 'admin';
         const password = 'admin123';
 
-        // Act
+        // Ejecutar
         await loginPage.loginSuccessfully(username, password);
 
-        // Assert
+        // Verificar
         const isAuthenticated = await dashboardPage.verifyAuthenticated();
         expect(isAuthenticated).toBe(true);
-        logger.info('✅ User successfully authenticated');
+        logger.info('✅ Usuario autenticado exitosamente');
     });
 
-    test('should show error with invalid password', async ({ logger }) => {
-        logger.step('Scenario: Attempt login with invalid password');
+    test('Debe mostrar error con contraseña inválida', async ({ logger }) => {
+        logger.step('Escenario: Intentar login con contraseña incorrecta');
 
-        // Arrange
+        // Preparar
         const username = 'admin';
         const invalidPassword = 'wrongpassword';
 
-        // Act & Assert
+        // Ejecutar & Verificar
         await loginPage.navigate();
         await loginPage.login(username, invalidPassword);
 
-        // Wait for error message to appear
+        // Esperar a que aparezca el mensaje de error
         await loginPage.expectVisible(loginPage.errorMessage);
         const errorMessage = await loginPage.errorMessage.textContent();
 
         expect(errorMessage).toBeTruthy();
         expect(errorMessage).toContain('Invalid');
-        logger.info(`✅ Error displayed correctly: ${errorMessage}`);
+        logger.info(`✅ Error mostrado correctamente: ${errorMessage}`);
     });
 
-    test('should show error with empty credentials', async ({ logger }) => {
-        logger.step('Scenario: Attempt login with empty credentials');
+    test('Debe mostrar error con credenciales vacías', async ({ logger }) => {
+        logger.step('Escenario: Intentar login con campos vacíos');
 
-        // Act
+        // Ejecutar
         await loginPage.navigate();
         await loginPage.clickLoginButton();
 
-        // Assert - usually validation message appears
-        // Note: Behavior depends on form validation (HTML5 or custom JS)
-        await loginPage.page.waitForTimeout(1000); // Wait for validation
-        logger.info('✅ Form validation works (empty fields)');
+        // Verificar - generalmente aparece un mensaje de validación
+        // Nota: El comportamiento depende de la validación del formulario (HTML5 o JavaScript personalizado)
+        await loginPage.page.waitForTimeout(1000); // Esperar validación
+        logger.info('✅ Validación del formulario funcionando (campos vacíos)');
     });
 
-    test('should clear form fields', async ({ logger }) => {
-        logger.step('Scenario: Clear login form fields');
+    test('Debe limpiar los campos del formulario', async ({ logger }) => {
+        logger.step('Escenario: Limpiar campos del formulario de login');
 
-        // Act
+        // Ejecutar
         await loginPage.navigate();
         await loginPage.enterUsername('testuser');
         await loginPage.enterPassword('testpass');
         await loginPage.clearForm();
 
-        // Assert
+        // Verificar
         const usernameValue = await loginPage.usernameInput.inputValue();
         const passwordValue = await loginPage.passwordInput.inputValue();
 
         expect(usernameValue).toBe('');
         expect(passwordValue).toBe('');
-        logger.info('✅ Form fields cleared successfully');
+        logger.info('✅ Campos del formulario limpiados exitosamente');
     });
 
-    test('should have correct page URL', async ({ logger }) => {
-        logger.step('Scenario: Verify login page URL');
+    test('Debe tener la URL correcta de la página de login', async ({ logger }) => {
+        logger.step('Escenario: Verificar URL de la página de login');
 
-        // Act
+        // Ejecutar
         await loginPage.navigate();
         const url = loginPage.page.url();
 
-        // Assert
+        // Verificar
         expect(url).toContain('/auth/login');
-        logger.info(`✅ Correct URL: ${url}`);
+        logger.info(`✅ URL correcta: ${url}`);
     });
 
-    test('should redirect to dashboard after successful login', async ({ logger }) => {
-        logger.step('Scenario: Verify redirect to dashboard');
+    test('Debe redirigir al dashboard después de un login exitoso', async ({ logger }) => {
+        logger.step('Escenario: Verificar redirección al dashboard');
 
-        // Act
+        // Ejecutar
         const username = 'admin';
         const password = 'admin123';
         await loginPage.loginSuccessfully(username, password);
 
-        // Assert
+        // Verificar
         const url = await dashboardPage.getCurrentUrl();
         expect(url).toContain('dashboard');
-        logger.info(`✅ Redirected to dashboard: ${url}`);
+        logger.info(`✅ Redirigido al dashboard: ${url}`);
     });
 });
 
 /**
- * Test Notes:
- * - Username: admin
- * - Password: admin123
+ * Notas de prueba:
+ * - Usuario: admin
+ * - Contraseña: admin123
  * 
- * These are typical demo credentials for OrangeHRM demo site.
- * Update as needed based on your target environment.
+ * Estas son las credenciales típicas del sitio demo de OrangeHRM.
+ * Actualiza según sea necesario según tu entorno objetivo.
  * 
- * Best Practices Demonstrated:
- * ✅ Separation of concerns (tests vs page objects)
- * ✅ Descriptive test names following "should" pattern
- * ✅ Arrange-Act-Assert structure
- * ✅ Logging at key points for debugging
- * ✅ Type-safe page objects
- * ✅ Reusable fixtures
- * ✅ No CSS selectors - only accessible locators
- */
+ * Mejores prácticas demostradas:
+ * ✅ Separación de responsabilidades (tests vs page objects)
+ * ✅ Nombres de tests descriptivos siguiendo el patrón "Debe"
+ * ✅ Estructura Preparar-Ejecutar-Verificar
+ * ✅ Logging en puntos clave para debugging
+ * ✅ Page objects type-safe
+ * ✅ Fixtures reutilizables
+ * ✅ No se usan selectores CSS - solo locators accesibles
