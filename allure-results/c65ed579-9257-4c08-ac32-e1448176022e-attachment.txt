@@ -1,0 +1,10 @@
+[INFO] 2026-04-03T18:37:08.403Z - 
+→ Inicializar page objects 
+[INFO] 2026-04-03T18:37:08.407Z - 
+→ Escenario: Verificar URL de la página de login 
+[INFO] 2026-04-03T18:37:08.408Z - 
+→ Navigate to OrangeHRM login page 
+[INFO] 2026-04-03T18:37:16.068Z - Login page loaded successfully 
+[INFO] 2026-04-03T18:37:16.068Z - 
+→ Get login page URL 
+[INFO] 2026-04-03T18:37:16.075Z - ✅ URL correcta: https://opensource-demo.orangehrmlive.com/web/index.php/auth/login 

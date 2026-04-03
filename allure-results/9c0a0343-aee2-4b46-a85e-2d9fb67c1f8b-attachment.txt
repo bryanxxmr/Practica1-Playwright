@@ -1,0 +1,27 @@
+[INFO] 2026-04-03T18:37:08.451Z - 
+→ Inicializar page objects 
+[INFO] 2026-04-03T18:37:08.456Z - 
+→ Escenario: Login con credenciales válidas 
+[INFO] 2026-04-03T18:37:08.456Z - 
+→ Complete login flow 
+[INFO] 2026-04-03T18:37:08.456Z - 
+→ Navigate to OrangeHRM login page 
+[INFO] 2026-04-03T18:37:14.880Z - Login page loaded successfully 
+[INFO] 2026-04-03T18:37:14.880Z - 
+→ Perform login action 
+[INFO] 2026-04-03T18:37:14.881Z - 
+→ Enter username: admin 
+[INFO] 2026-04-03T18:37:15.554Z - 
+→ Enter password 
+[INFO] 2026-04-03T18:37:15.650Z - 
+→ Click login button 
+[INFO] 2026-04-03T18:37:16.882Z - 
+→ Wait for dashboard navigation 
+[INFO] 2026-04-03T18:37:16.960Z - Successfully logged in 
+[INFO] 2026-04-03T18:37:16.960Z - 
+→ Verify user is authenticated 
+[INFO] 2026-04-03T18:37:16.960Z - 
+→ Verify dashboard is loaded 
+[INFO] 2026-04-03T18:37:16.960Z - Dashboard loaded successfully 
+[INFO] 2026-04-03T18:37:16.960Z - User is authenticated 
+[INFO] 2026-04-03T18:37:16.965Z - ✅ Usuario autenticado exitosamente 

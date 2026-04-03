@@ -1,0 +1,18 @@
+[INFO] 2026-04-03T18:37:08.454Z - 
+→ Inicializar page objects 
+[INFO] 2026-04-03T18:37:08.460Z - 
+→ Escenario: Intentar login con contraseña incorrecta 
+[INFO] 2026-04-03T18:37:08.460Z - 
+→ Navigate to OrangeHRM login page 
+[INFO] 2026-04-03T18:37:16.352Z - Login page loaded successfully 
+[INFO] 2026-04-03T18:37:16.352Z - 
+→ Perform login action 
+[INFO] 2026-04-03T18:37:16.352Z - 
+→ Enter username: admin 
+[INFO] 2026-04-03T18:37:16.820Z - 
+→ Enter password 
+[INFO] 2026-04-03T18:37:16.847Z - 
+→ Click login button 
+[INFO] 2026-04-03T18:37:17.856Z - 
+→ Get error message 
+[INFO] 2026-04-03T18:37:18.732Z - ✅ Error mostrado correctamente: Invalid credentials 

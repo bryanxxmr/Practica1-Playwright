@@ -15,6 +15,7 @@ playwright-report/
 blob-report/
 playwright/.cache/
 .cache/
+executive-report/
 
 # Screenshots, videos, traces
 screenshots/

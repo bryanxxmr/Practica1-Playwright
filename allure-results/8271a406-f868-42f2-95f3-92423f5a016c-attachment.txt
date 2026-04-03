@@ -1,0 +1,24 @@
+[INFO] 2026-04-03T18:37:08.433Z - 
+→ Inicializar page objects 
+[INFO] 2026-04-03T18:37:08.443Z - 
+→ Escenario: Verificar redirección al dashboard 
+[INFO] 2026-04-03T18:37:08.443Z - 
+→ Complete login flow 
+[INFO] 2026-04-03T18:37:08.443Z - 
+→ Navigate to OrangeHRM login page 
+[INFO] 2026-04-03T18:37:14.929Z - Login page loaded successfully 
+[INFO] 2026-04-03T18:37:14.930Z - 
+→ Perform login action 
+[INFO] 2026-04-03T18:37:14.930Z - 
+→ Enter username: admin 
+[INFO] 2026-04-03T18:37:15.850Z - 
+→ Enter password 
+[INFO] 2026-04-03T18:37:15.887Z - 
+→ Click login button 
+[INFO] 2026-04-03T18:37:17.053Z - 
+→ Wait for dashboard navigation 
+[INFO] 2026-04-03T18:37:17.120Z - Successfully logged in 
+[INFO] 2026-04-03T18:37:17.120Z - 
+→ Get current dashboard URL 
+[INFO] 2026-04-03T18:37:17.121Z - Current URL: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index 
+[INFO] 2026-04-03T18:37:17.125Z - ✅ Redirigido al dashboard: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index 
