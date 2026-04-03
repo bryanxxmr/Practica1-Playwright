@@ -54,13 +54,42 @@ jobs:
       - name: Run tests
         run: npx playwright test --project=${{ matrix.browser }}
 
-      - name: Upload Playwright report
+      - name: Download previous Allure results
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          path: allure-results-download
+          pattern: allure-results-*
+        continue-on-error: true
+
+      - name: Merge Allure results
+        if: always()
+        run: |
+          mkdir -p allure-results-merged
+          if [ -d "allure-results-download" ]; then
+            find allure-results-download -name "*.json" -o -name "*.xml" | xargs -I {} cp {} allure-results-merged/ 2>/dev/null || true
+          fi
+          if [ -d "allure-results" ]; then
+            cp allure-results/* allure-results-merged/ 2>/dev/null || true
+          fi
+        shell: bash
+        continue-on-error: true
+
+      - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
-          retention-days: 30
+          retention-days: 14
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-${{ matrix.browser }}
+          path: allure-results/
+          retention-days: 14
 
       - name: Upload test results on failure
         uses: actions/upload-artifact@v4
@@ -70,26 +99,214 @@ jobs:
           path: test-results/
           retention-days: 7
 
-  report:
-    name: Publish Report
+  merge-reports:
+    name: Merge & Publish Reports
     runs-on: ubuntu-latest
     if: always()
     needs: test
 
     steps:
-      - name: Download artifacts
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install report dependencies
+        run: npm ci
+
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: all-reports
-        continue-on-error: true
+          path: all-artifacts
 
-      - name: Display structure of downloaded files
+      - name: Prepare merged report directory
         run: |
-          if [ -d "all-reports" ]; then
-            echo "=== Artifacts downloaded successfully ==="
-            ls -R all-reports/
+          mkdir -p allure-report-merged
+          mkdir -p playwright-report-merged
+          echo "=== Downloaded Artifacts Structure ==="
+          ls -R all-artifacts/
+
+      - name: Merge Allure results
+        run: |
+          mkdir -p allure-results-all
+          find all-artifacts -type d -name "allure-results-*" -exec cp {}/* allure-results-all/ \; 2>/dev/null || true
+
+          if [ -f allure-results-all/executor.json ] || [ -d allure-results-all ] && [ "$(ls -A allure-results-all)" ]; then
+            echo "Found Allure results, generating report..."
+            npx allure generate --clean -o allure-report-merged allure-results-all || echo "Allure generation skipped - minimal results"
           else
-            echo "No artifacts were generated"
+            echo "No Allure results found, skipping Allure report generation"
           fi
         shell: bash
         continue-on-error: true
+
+      - name: Upload merged Playwright reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-reports-merged
+          path: all-artifacts/playwright-report-*/
+          retention-days: 14
+        continue-on-error: true
+
+      - name: Upload merged Allure report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-report-merged
+          path: allure-report-merged/
+          retention-days: 30
+        continue-on-error: true
+
+      - name: Generate Test Summary
+        if: always()
+        run: |
+          echo "# 📊 Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Browser Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # List all test result files
+          if [ -f all-artifacts/test-results-chromium/results.json ]; then
+            echo "✅ **Chromium:** Tests executed" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f all-artifacts/test-results-firefox/results.json ]; then
+            echo "✅ **Firefox:** Tests executed" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f all-artifacts/test-results-webkit/results.json ]; then
+            echo "✅ **WebKit:** Tests executed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📈 Available Reports" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 📄 **Playwright HTML Reports** - Download from artifacts (playwright-report-*)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **Allure Report** - Download from artifacts (allure-report-merged)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 **JSON Results** - test-results-*" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎬 **Videos & Screenshots** - test-results-* (on failure)" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
+  publish-report:
+    name: Publish to GitHub Pages
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && always()
+    needs: merge-reports
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Allure report
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-merged
+          path: allure-report
+        continue-on-error: true
+
+      - name: Create index.html redirect
+        run: |
+          mkdir -p public
+          cat > public/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Test Reports - OrangeHRM Playwright Tests</title>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { 
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      min-height: 100vh;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      padding: 20px;
+                  }
+                  .container {
+                      background: white;
+                      border-radius: 10px;
+                      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                      padding: 40px;
+                      max-width: 600px;
+                      width: 100%;
+                  }
+                  h1 {
+                      color: #333;
+                      margin-bottom: 10px;
+                      font-size: 28px;
+                  }
+                  .subtitle {
+                      color: #666;
+                      margin-bottom: 30px;
+                      font-size: 14px;
+                  }
+                  .report-section {
+                      margin-bottom: 20px;
+                  }
+                  .report-link {
+                      display: inline-block;
+                      padding: 12px 24px;
+                      margin-bottom: 10px;
+                      background: #667eea;
+                      color: white;
+                      border-radius: 5px;
+                      text-decoration: none;
+                      transition: background 0.3s;
+                      width: 100%;
+                      text-align: center;
+                      box-sizing: border-box;
+                  }
+                  .report-link:hover {
+                      background: #764ba2;
+                  }
+                  .info {
+                      background: #f0f4ff;
+                      padding: 15px;
+                      border-left: 4px solid #667eea;
+                      border-radius: 4px;
+                      margin-top: 20px;
+                      font-size: 13px;
+                      color: #555;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🧪 OrangeHRM Test Reports</h1>
+                  <div class="subtitle">Playwright Automation Test Results</div>
+                  
+                  <div class="report-section">
+                      <h3 style="color: #333; margin-bottom: 12px;">📊 Available Reports:</h3>
+                      <a href="./allure-report/index.html" class="report-link">📈 View Allure Report</a>
+                  </div>
+                  
+                  <div class="info">
+                      <strong>✅ Supported Browsers:</strong> Chromium, Firefox, WebKit<br>
+                      <strong>📅 Updated:</strong> On every main branch push<br>
+                      <strong>🔄 CI/CD:</strong> GitHub Actions Playwright Tests
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+          cat public/index.html
+        shell: bash
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "public"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

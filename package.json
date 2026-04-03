@@ -13,6 +13,8 @@
         "test:webkit": "playwright test --project=webkit",
         "test:trace": "playwright test --trace on",
         "report": "playwright show-report",
+        "allure:report": "allure generate --clean -o allure-report allure-results",
+        "allure:open": "allure open allure-report",
         "lint": "eslint src tests --ext .ts",
         "format": "prettier --write src tests",
         "type-check": "tsc --noEmit"
@@ -30,6 +32,7 @@
         "@types/node": "^22.10.2",
         "@typescript-eslint/eslint-plugin": "^6.0.0",
         "@typescript-eslint/parser": "^6.0.0",
+        "allure-commandline": "^2.35.0",
         "eslint": "^8.56.0",
         "prettier": "^3.4.2",
         "typescript": "^5.7.2",
