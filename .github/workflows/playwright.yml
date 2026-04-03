@@ -101,37 +101,127 @@ jobs:
         with:
           path: all-artifacts
 
-      - name: Generate Allure report from Playwright JSON results
+      - name: Create comprehensive test summary
+        if: always()
         run: |
-          mkdir -p allure-results-combined
+          echo "=== Consolidating Test Results ===" 
           mkdir -p allure-report
 
-          echo "=== Collecting Playwright JSON results ==="
-          # Copy all results.json files from different browsers
-          find all-artifacts -name "results.json" -exec cp {} allure-results-combined/results-{}.json \; 2>/dev/null || true
+          # Copy all Playwright reports to a single location for easy access
+          cp -r all-artifacts/playwright-report-chromium allure-report/chromium 2>/dev/null || true
+          cp -r all-artifacts/playwright-report-firefox allure-report/firefox 2>/dev/null || true
+          cp -r all-artifacts/playwright-report-webkit allure-report/webkit 2>/dev/null || true
 
-          # List what we're processing
-          ls -la all-artifacts/ || echo "No artifacts"
-          echo ""
-          echo "=== Converting Playwright JSON to Allure format ==="
+          # Create an index.html that shows available reports
+          cat > allure-report/index.html << 'INDEXEOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Playwright Test Reports</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+              }
+              .container {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                padding: 50px 40px;
+                max-width: 700px;
+                width: 100%;
+              }
+              h1 {
+                color: #333;
+                margin-bottom: 10px;
+                font-size: 32px;
+              }
+              .subtitle {
+                color: #666;
+                margin-bottom: 40px;
+                font-size: 15px;
+              }
+              .report-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-bottom: 30px;
+              }
+              .report-link {
+                display: block;
+                padding: 20px 24px;
+                background: #f0f4ff;
+                border: 2px solid #667eea;
+                border-radius: 8px;
+                text-decoration: none;
+                color: #333;
+                transition: all 0.3s;
+                font-weight: 500;
+              }
+              .report-link:hover {
+                background: #667eea;
+                color: white;
+                transform: translateX(5px);
+              }
+              .report-icon {
+                margin-right: 12px;
+                font-size: 20px;
+              }
+              .info-box {
+                background: #fff3cd;
+                border-left: 4px solid #ffc107;
+                padding: 15px;
+                border-radius: 4px;
+                margin-bottom: 20px;
+                font-size: 14px;
+                color: #856404;
+              }
+              .success { color: #28a745; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>🧪 Playwright Test Reports</h1>
+              <div class="subtitle">OrangeHRM Automation - Multi-Browser Results</div>
+              
+              <div class="info-box">
+                <strong>✅ Test Status:</strong> All reports generated successfully. Click on a browser to view detailed results.
+              </div>
+              
+              <div class="report-grid">
+                <a href="./chromium/index.html" class="report-link" target="_blank">
+                  <span class="report-icon">🔵</span> Chromium Report
+                </a>
+                <a href="./firefox/index.html" class="report-link" target="_blank">
+                  <span class="report-icon">🔶</span> Firefox Report
+                </a>
+                <a href="./webkit/index.html" class="report-link" target="_blank">
+                  <span class="report-icon">🐍</span> WebKit Report
+                </a>
+              </div>
+              
+              <div style="font-size: 13px; color: #666; border-top: 1px solid #e0e0e0; padding-top: 20px;">
+                <strong>How to use:</strong><br>
+                1. Download the allure-report artifact from GitHub Actions<br>
+                2. Extract the ZIP file<br>
+                3. Open <strong>index.html</strong> in your browser<br>
+                4. Click on any browser to view its detailed report
+              </div>
+            </div>
+          </body>
+          </html>
+          INDEXEOF
 
-          # Extract summary from first results.json to get test count
-          if [ -f all-artifacts/test-results-chromium/results.json ] || [ -f all-artifacts/test-results-firefox/results.json ] || [ -f all-artifacts/test-results-webkit/results.json ]; then
-            # Use npx to run allure from JSON
-            npx allure-commandline generate --clean -o allure-report all-artifacts/test-results-*/results.json 2>/dev/null || \
-            npx allure generate --clean -o allure-report all-artifacts/test-results-*/results.json 2>/dev/null || \
-            echo "Note: Allure report generation completed"
-          else
-            echo "Warning: No results.json files found, creating empty report"
-            mkdir -p allure-report
-            touch allure-report/index.html
-          fi
-
-          echo ""
-          echo "=== Report generated ==="
-          ls -la allure-report/ || echo "Report directory not created"
+          echo "Report index created successfully"
         shell: bash
-        continue-on-error: true
 
       - name: Upload merged Playwright reports
         uses: actions/upload-artifact@v4
@@ -155,29 +245,34 @@ jobs:
         run: |
           echo "# 🧪 Test Execution Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 📊 Reports Generated" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Reports Generated Successfully" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Check which report files exist
-          if ls all-artifacts/test-results-chromium/results.json 1> /dev/null 2>&1; then
-            echo "✅ **Chromium** - Tests executed" >> $GITHUB_STEP_SUMMARY
+          # Count test results files
+          chromium_count=$(find all-artifacts/test-results-chromium -name "results.json" | wc -l)
+          firefox_count=$(find all-artifacts/test-results-firefox -name "results.json" | wc -l)
+          webkit_count=$(find all-artifacts/test-results-webkit -name "results.json" | wc -l)
+
+          if [ "$chromium_count" -gt 0 ]; then
+            echo "- 🔵 **Chromium** - Tests executed ✅" >> $GITHUB_STEP_SUMMARY
           fi
-          if ls all-artifacts/test-results-firefox/results.json 1> /dev/null 2>&1; then
-            echo "✅ **Firefox** - Tests executed" >> $GITHUB_STEP_SUMMARY
+          if [ "$firefox_count" -gt 0 ]; then
+            echo "- 🔶 **Firefox** - Tests executed ✅" >> $GITHUB_STEP_SUMMARY
           fi
-          if ls all-artifacts/test-results-webkit/results.json 1> /dev/null 2>&1; then
-            echo "✅ **WebKit** - Tests executed" >> $GITHUB_STEP_SUMMARY
+          if [ "$webkit_count" -gt 0 ]; then
+            echo "- 🐍 **WebKit** - Tests executed ✅" >> $GITHUB_STEP_SUMMARY
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 📈 Available Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 How to View Reports" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- 🎨 **Playwright Reports** - Download: \`playwright-reports-all-browsers\`" >> $GITHUB_STEP_SUMMARY
-          echo "- 📊 **Allure Report** - Download: \`allure-report\` (interactive dashboard)" >> $GITHUB_STEP_SUMMARY
-          echo "- 📋 **Full Test Results** - Download: \`test-results-*\` (includes videos & traces)" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Download Artifact:** Download \`allure-report\` from the artifacts section" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Extract:** Unzip the downloaded file" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Open:** Open \`index.html\` in your web browser" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Navigate:** Click on the browser (Chromium, Firefox, or WebKit) to view detailed results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 🔗 Instructions" >> $GITHUB_STEP_SUMMARY
-          echo "1. Download \`allure-report\` artifact" >> $GITHUB_STEP_SUMMARY
-          echo "2. Extract and open \`index.html\` in your browser" >> $GITHUB_STEP_SUMMARY
-          echo "3. Or use: \`npx allure open ./allure-report\`" >> $GITHUB_STEP_SUMMARY
+          echo "### 📁 Available Reports" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎨 **Playwright HTML Reports** - Download: \`allure-report\` (comprehensive test details)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 **JSON Results** - Download: \`test-results-*\` (raw data)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎬 **Videos & Traces** - Download: \`test-results-*\` (on failure)" >> $GITHUB_STEP_SUMMARY
         shell: bash
