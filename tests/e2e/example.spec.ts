@@ -1,6 +1,7 @@
 import { test, expect } from '../fixtures/fixtures';
 import { LoginPage } from '@pages/LoginPage';
 import { DashboardPage } from '@pages/DashboardPage';
+import { TEST_CREDENTIALS } from '@config/testCredentials';
 
 /**
  * Suite de Pruebas de Autenticación de OrangeHRM
@@ -36,12 +37,8 @@ test.describe('Autenticación OrangeHRM', () => {
     test('Debe autenticar exitosamente con credenciales válidas', async ({ logger }) => {
         logger.step('Escenario: Login con credenciales válidas');
 
-        // Preparar
-        const username = 'admin';
-        const password = 'admin123';
-
-        // Ejecutar
-        await loginPage.loginSuccessfully(username, password);
+        // Ejecutar - usar credenciales desde .env en lugar de hardcodear
+        await loginPage.loginSuccessfully(TEST_CREDENTIALS.username, TEST_CREDENTIALS.password);
 
         // Verificar
         const isAuthenticated = await dashboardPage.verifyAuthenticated();
@@ -52,13 +49,12 @@ test.describe('Autenticación OrangeHRM', () => {
     test('Debe mostrar error con contraseña inválida', async ({ logger }) => {
         logger.step('Escenario: Intentar login con contraseña incorrecta');
 
-        // Preparar
-        const username = 'admin';
+        // Preparar - credenciales desde .env + contraseña inválida
         const invalidPassword = 'wrongpassword';
 
         // Ejecutar & Verificar
         await loginPage.navigate();
-        await loginPage.login(username, invalidPassword);
+        await loginPage.login(TEST_CREDENTIALS.username, invalidPassword);
 
         // Obtener mensaje de error usando método POM
         const errorMessage = await loginPage.getErrorMessage();
@@ -113,10 +109,8 @@ test.describe('Autenticación OrangeHRM', () => {
     test('Debe redirigir al dashboard después de un login exitoso', async ({ logger }) => {
         logger.step('Escenario: Verificar redirección al dashboard');
 
-        // Ejecutar
-        const username = 'admin';
-        const password = 'admin123';
-        await loginPage.loginSuccessfully(username, password);
+        // Ejecutar - usar credenciales desde .env
+        await loginPage.loginSuccessfully(TEST_CREDENTIALS.username, TEST_CREDENTIALS.password);
 
         // Verificar
         const url = await dashboardPage.getCurrentUrl();
@@ -127,11 +121,16 @@ test.describe('Autenticación OrangeHRM', () => {
 
 /**
  * Notas de prueba:
- * - Usuario: admin
- * - Contraseña: admin123
  * 
- * Estas son las credenciales típicas del sitio demo de OrangeHRM.
- * Actualiza según sea necesario según tu entorno objetivo.
+ * CREDENCIALES:
+ * - Las credenciales se cargan desde variables de entorno (process.env)
+ * - Ver src/config/testCredentials.ts para más detalles
+ * - Local: usar archivo .env (NUNCA commitar)
+ * - CI/CD: usar GitHub Secrets → Settings → Actions
+ * 
+ * CONFIGURACIÓN:
+ * - TEST_USERNAME: usuario de prueba (por defecto: admin)
+ * - TEST_PASSWORD: contraseña de prueba (por defecto: admin123)
  * 
  * Mejores prácticas demostradas:
  * ✅ Separación de responsabilidades (tests vs page objects)
@@ -139,6 +138,7 @@ test.describe('Autenticación OrangeHRM', () => {
  * ✅ Estructura Preparar-Ejecutar-Verificar
  * ✅ Logging en puntos clave para debugging
  * ✅ Page objects type-safe
+ * ✅ Credenciales seguras via variables de entorno
  * ✅ Fixtures reutilizables
- * ✅ No se usan selectores CSS - solo locators accesibles
+ * ✅ POM encapsulation 100% aplicado
  */
