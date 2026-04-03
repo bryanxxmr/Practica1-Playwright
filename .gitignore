@@ -50,6 +50,6 @@ dist/
 build/
 
 # Package managers
-package-lock.json
+# NOTE: package-lock.json IS included for reproducible builds in CI/CD
 yarn.lock
 poetry.lock
