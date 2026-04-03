@@ -81,6 +81,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: all-reports
+        continue-on-error: true
 
       - name: Display structure of downloaded files
-        run: ls -R all-reports/
+        run: |
+          if [ -d "all-reports" ]; then
+            echo "=== Artifacts downloaded successfully ==="
+            ls -R all-reports/
+          else
+            echo "No artifacts were generated"
+          fi
+        shell: bash
+        continue-on-error: true
