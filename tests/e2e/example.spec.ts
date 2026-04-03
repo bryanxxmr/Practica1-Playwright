@@ -143,3 +143,4 @@ test.describe('Autenticación OrangeHRM', () => {
  * ✅ Page objects type-safe
  * ✅ Fixtures reutilizables
  * ✅ No se usan selectores CSS - solo locators accesibles
+ */

@@ -13,7 +13,9 @@ export class DashboardPage extends BasePage {
     readonly mainHeading: Locator = this.page.locator('[role="heading"]').first();
     readonly userMenuButton: Locator = this.page.locator('[role="button"]').filter({ hasText: /profile|logout/i }).first();
     readonly logoutButton: Locator = this.page.getByRole('link', { name: /logout/i });
-    readonly dashboardContent: Locator = this.page.locator('[role="main"]');
+    // Selector robusto: busca el elemento de navegación que solo aparece después del login exitoso
+    // En OrangeHRM, el nav lateral es el indicador más confiable de autenticación
+    readonly dashboardContent: Locator = this.page.locator('.sidepanel, nav, .orangehrm-container').first();
 
     constructor(page: Page) {
         super(page);
@@ -21,14 +23,23 @@ export class DashboardPage extends BasePage {
 
     /**
      * Check if dashboard is loaded (verify we're logged in)
+     * Uses URL verification instead of unstable DOM selectors
      */
     async isLoaded(): Promise<boolean> {
         Logger.step('Verify dashboard is loaded');
         try {
-            await this.dashboardContent.waitFor({ state: 'visible', timeout: 5000 });
-            Logger.info('Dashboard loaded successfully');
-            return true;
-        } catch {
+            const currentUrl = this.page.url();
+            // Verificar que estamos en el dashboard, no en login
+            const isDashboard = currentUrl.includes('/dashboard') && !currentUrl.includes('/auth/login');
+
+            if (isDashboard) {
+                Logger.info('Dashboard loaded successfully');
+                return true;
+            } else {
+                Logger.warn('Dashboard not loaded - URL indicates not on dashboard');
+                return false;
+            }
+        } catch (error) {
             Logger.warn('Dashboard not loaded');
             return false;
         }

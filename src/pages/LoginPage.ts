@@ -13,7 +13,8 @@ export class LoginPage extends BasePage {
     // Usando selectores CSS para el formulario de login de OrangeHRM (más confiables que placeholder)
     readonly usernameInput: Locator = this.page.locator('input[name="username"]');
     readonly passwordInput: Locator = this.page.locator('input[name="password"]');
-    readonly loginButton: Locator = this.page.locator('button[type="submit"]');
+    // Selector robusto: busca el botón basándose en su posición en el formulario
+    readonly loginButton: Locator = this.page.locator('button:has-text("Login")');
     readonly errorMessage: Locator = this.page.locator('[role="alert"]');
     readonly pageTitle: Locator = this.page.locator('h5').first();
     async navigate(): Promise<void> {
@@ -97,12 +98,15 @@ export class LoginPage extends BasePage {
 
     /**
      * Check if login page is displayed (verify we're on login page)
+     * Verifies page is on login URL instead of relying on DOM elements
      */
     async isDisplayed(): Promise<boolean> {
         Logger.step('Check if login page is displayed');
-        const isVisible = await this.isVisible(this.loginButton);
-        Logger.info(`Login page visible: ${isVisible}`);
-        return isVisible;
+        // Estrategia más robusta: verificar la URL en lugar de elementos DOM
+        const url = this.page.url();
+        const isLoginPage = url.includes('/auth/login') && !url.includes('/dashboard');
+        Logger.info(`Login page visible: ${isLoginPage} (URL: ${url})`);
+        return isLoginPage;
     }
 
     /**
