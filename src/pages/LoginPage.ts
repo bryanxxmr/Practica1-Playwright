@@ -134,4 +134,60 @@ export class LoginPage extends BasePage {
         await this.clearField(this.usernameInput);
         await this.clearField(this.passwordInput);
     }
+
+    // ===== GETTERS - Encapsulate direct access to locators =====
+
+    /**
+     * Get the error message text
+     * Encapsulates direct access to errorMessage locator
+     */
+    async getErrorMessage(): Promise<string | null> {
+        Logger.step('Get error message');
+        return await this.errorMessage.textContent();
+    }
+
+    /**
+     * Check if error message is displayed
+     */
+    async isErrorDisplayed(): Promise<boolean> {
+        Logger.step('Check if error is displayed');
+        return await this.errorMessage.isVisible().catch(() => false);
+    }
+
+    /**
+     * Get current page URL
+     * Encapsulates direct page.url() access
+     */
+    async getPageUrl(): Promise<string> {
+        Logger.step('Get login page URL');
+        return this.page.url();
+    }
+
+    /**
+     * Get username input value
+     * Encapsulates direct inputValue() access
+     */
+    async getUsernameValue(): Promise<string> {
+        Logger.step('Get username value');
+        return await this.usernameInput.inputValue();
+    }
+
+    /**
+     * Get password input value
+     * Encapsulates direct inputValue() access
+     */
+    async getPasswordValue(): Promise<string> {
+        Logger.step('Get password value');
+        return await this.passwordInput.inputValue();
+    }
+
+    /**
+     * Wait for form validation (used when testing empty credentials)
+     * Encapsulates waitForTimeout() to named, meaningful wait
+     */
+    async waitForFormValidation(ms: number = 1000): Promise<void> {
+        Logger.step(`Wait for form validation (${ms}ms)`);
+        await this.page.waitForTimeout(ms);
+    }
 }
+

@@ -60,9 +60,8 @@ test.describe('Autenticación OrangeHRM', () => {
         await loginPage.navigate();
         await loginPage.login(username, invalidPassword);
 
-        // Esperar a que aparezca el mensaje de error
-        await loginPage.expectVisible(loginPage.errorMessage);
-        const errorMessage = await loginPage.errorMessage.textContent();
+        // Obtener mensaje de error usando método POM
+        const errorMessage = await loginPage.getErrorMessage();
 
         expect(errorMessage).toBeTruthy();
         expect(errorMessage).toContain('Invalid');
@@ -76,9 +75,8 @@ test.describe('Autenticación OrangeHRM', () => {
         await loginPage.navigate();
         await loginPage.clickLoginButton();
 
-        // Verificar - generalmente aparece un mensaje de validación
-        // Nota: El comportamiento depende de la validación del formulario (HTML5 o JavaScript personalizado)
-        await loginPage.page.waitForTimeout(1000); // Esperar validación
+        // Verificar - esperar validación mediante método POM en lugar de waitForTimeout
+        await loginPage.waitForFormValidation();
         logger.info('✅ Validación del formulario funcionando (campos vacíos)');
     });
 
@@ -91,9 +89,9 @@ test.describe('Autenticación OrangeHRM', () => {
         await loginPage.enterPassword('testpass');
         await loginPage.clearForm();
 
-        // Verificar
-        const usernameValue = await loginPage.usernameInput.inputValue();
-        const passwordValue = await loginPage.passwordInput.inputValue();
+        // Verificar - usar métodos POM en lugar de acceso directo
+        const usernameValue = await loginPage.getUsernameValue();
+        const passwordValue = await loginPage.getPasswordValue();
 
         expect(usernameValue).toBe('');
         expect(passwordValue).toBe('');
@@ -105,7 +103,7 @@ test.describe('Autenticación OrangeHRM', () => {
 
         // Ejecutar
         await loginPage.navigate();
-        const url = loginPage.page.url();
+        const url = await loginPage.getPageUrl();
 
         // Verificar
         expect(url).toContain('/auth/login');
