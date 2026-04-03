@@ -10,19 +10,12 @@ import { Logger } from '../utils/logger';
  */
 export class LoginPage extends BasePage {
     // ===== Locators =====
-    readonly usernameInput: Locator = this.page.getByPlaceholder('Username');
-    readonly passwordInput: Locator = this.page.getByPlaceholder('Password');
-    readonly loginButton: Locator = this.page.getByRole('button', { name: /login/i });
-    readonly errorMessage: Locator = this.page.locator('[role="alert"]');
-    readonly pageHeading: Locator = this.page.locator('h1, h2').first();
-
-    constructor(page: Page) {
-        super(page);
-    }
-
-    /**
-     * Navigate to the login page
-     */
+  // Using CSS selectors for OrangeHRM login form (more reliable than placeholder text)
+  readonly usernameInput: Locator = this.page.locator('input[name="username"]');
+  readonly passwordInput: Locator = this.page.locator('input[name="password"]');
+  readonly loginButton: Locator = this.page.getByRole('button', { name: /login/i });
+  readonly errorMessage: Locator = this.page.locator('[role="alert"]');
+  readonly pageTitle: Locator = this.page.locator('h5').first();
     async navigate(): Promise<void> {
         Logger.step('Navigate to OrangeHRM login page');
         await this.goto('/web/index.php/auth/login');
