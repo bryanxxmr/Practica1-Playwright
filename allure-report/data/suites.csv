@@ -1,0 +1,8 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","4727","Autenticación OrangeHRM › Debe mostrar la página de inicio de sesión","","2026-04-03","passed","2026-04-03","","e2e\example.spec.ts","e2e\example.spec.ts",""
+"","5146","Autenticación OrangeHRM › Debe mostrar error con credenciales vacías","","2026-04-03","passed","2026-04-03","","e2e\example.spec.ts","e2e\example.spec.ts",""
+"","5520","Autenticación OrangeHRM › Debe limpiar los campos del formulario","","2026-04-03","passed","2026-04-03","","e2e\example.spec.ts","e2e\example.spec.ts",""
+"","5612","Autenticación OrangeHRM › Debe autenticar exitosamente con credenciales válidas","","2026-04-03","passed","2026-04-03","","e2e\example.spec.ts","e2e\example.spec.ts",""
+"","5404","Autenticación OrangeHRM › Debe tener la URL correcta de la página de login","","2026-04-03","passed","2026-04-03","","e2e\example.spec.ts","e2e\example.spec.ts",""
+"","7247","Autenticación OrangeHRM › Debe redirigir al dashboard después de un login exitoso","","2026-04-03","passed","2026-04-03","","e2e\example.spec.ts","e2e\example.spec.ts",""
+"","5892","Autenticación OrangeHRM › Debe mostrar error con contraseña inválida","","2026-04-03","passed","2026-04-03","","e2e\example.spec.ts","e2e\example.spec.ts",""
