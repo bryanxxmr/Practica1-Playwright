@@ -1,0 +1,38 @@
+{
+    "name": "practica1-playwright",
+    "version": "1.0.0",
+    "description": "Enterprise-grade Playwright test framework with Page Object Model",
+    "main": "index.js",
+    "scripts": {
+        "test": "playwright test",
+        "test:headed": "playwright test --headed",
+        "test:debug": "playwright test --debug",
+        "test:ui": "playwright test --ui",
+        "test:chromium": "playwright test --project=chromium",
+        "test:firefox": "playwright test --project=firefox",
+        "test:webkit": "playwright test --project=webkit",
+        "test:trace": "playwright test --trace on",
+        "report": "playwright show-report",
+        "lint": "eslint src tests --ext .ts",
+        "format": "prettier --write src tests",
+        "type-check": "tsc --noEmit"
+    },
+    "keywords": [
+        "playwright",
+        "e2e",
+        "testing",
+        "page-object-model"
+    ],
+    "author": "bryanxxmr",
+    "license": "MIT",
+    "devDependencies": {
+        "@playwright/test": "^1.48.2",
+        "@types/node": "^22.10.2",
+        "@typescript-eslint/eslint-plugin": "^6.0.0",
+        "@typescript-eslint/parser": "^6.0.0",
+        "eslint": "^8.56.0",
+        "prettier": "^3.4.2",
+        "typescript": "^5.7.2",
+        "dotenv": "^16.4.5"
+    }
+}

@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Skill(update-config:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit*)",
+            "command": "jq -r '.tool_input.command' | { read -r cmd; msg=$(echo \"$cmd\" | sed -n \"s/.*-m ['\\\"']\\([^'\\\"']*\\)['\\\"'].*/\\1/p\"); [ -z \"$msg\" ] && exit 0; echo \"$msg\" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\\(.+\\))?: .+' || printf '{\"continue\":false,\"stopReason\":\"Commit rechazado. Usa Conventional Commits.\\nEjemplos validos:\\n  feat: add login page\\n  fix(auth): resolve token expiry\\n  test: add playwright specs\\n  chore: update dependencies\"}'; }",
+            "statusMessage": "Validando Conventional Commits...",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // \"\"' | { read -r f; echo \"$f\" | grep -qE '\\.(spec|test)\\.(ts|js|py)$' && npx playwright test \"$f\" --reporter=line 2>/dev/null || true; }",
+            "statusMessage": "Ejecutando tests de Playwright...",
+            "timeout": 120,
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
